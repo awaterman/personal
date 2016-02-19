@@ -1,4 +1,4 @@
-"""Space Golf Version 0.02
+"""Space Golf Version 0.03 (Added SFX)
 Programmer: Anthony Waterman
 Project Start Date: 12/15/2015
 Project Build Date: 2/18/2016
@@ -9,6 +9,7 @@ from math import *
 import functools
 import os
 import time
+import winsound
 
 class Hole: 
     def __init__(self, no_planets, spawn_x, spawn_y, hole_x, hole_y, par):
@@ -395,6 +396,7 @@ class Homescreen:
         if cp.controls == 0:
             self.timer_delay = 0  # Skips to shot at rest
             return
+        self.sfx('golf')
         self.canv.delete(self.reticle)
         self.timer_delay = .05
         cp.initial_x = cp.loc_x  # Save initial position
@@ -427,6 +429,7 @@ class Homescreen:
                     self.moving = False
                     cp.vel_x = 0
                     cp.vel_y = 0
+                    self.sfx('rest')
                     break
                 # Hitting planet surface but not slow enough to stop
                 elif distance <= i.size:
@@ -435,11 +438,13 @@ class Homescreen:
                             abs(dist_y) / dist_y)
                         cp.vel_x = friction * cp.vel_x * bnc
                         bnc -= .01  # Decrements ensure the ball will stop
+                        self.sfx('bounce')
                     elif dist_y == 0:
                         cp.vel_x = friction * bnc * abs(cp.vel_x) * (
                             abs(dist_x) / dist_x)
                         cp.vel_y = friction * cp.vel_y * bnc
                         bnc -= .01
+                        self.sfx('bounce')
                     else:
                         """Trig equations to use a set of secondary axes that 
                         are perpindicular / parallel to the planets surface.
@@ -447,6 +452,7 @@ class Homescreen:
                         theta = atan2(dist_x, dist_y)
                         vel_out = cp.vel_x * sin(theta) + cp.vel_y * cos(theta)
                         if vel_out < 0:
+                            self.sfx('bounce')
                             vel_para = friction * (
                                 cp.vel_x * cos(theta) - cp.vel_y * sin(theta))
                             vel_perp = friction * abs(vel_out)  
@@ -476,6 +482,7 @@ class Homescreen:
                     cp.vel_x = 0
                     cp.vel_y = 0
                     self.moving = False
+                    self.sfx('clap')
             
             # Finalize velocity, position
             cp.vel_x += acc_x
@@ -491,6 +498,7 @@ class Homescreen:
                 cp.vel_y = 0
                 cp.loc_x = cp.initial_x
                 cp.loc_y = cp.initial_y
+                self.sfx('fail')
             
             # Update display of ball
             time.sleep(self.timer_delay)
@@ -535,6 +543,8 @@ class Homescreen:
         else:
             self.canv.destroy()
             if self.current_hole <= 9:  # Proceed to next hole
+                time.sleep(2)
+                self.sfx('laser')
                 self.canv = Canvas(
                     self.gamewindow, width = 1500, height = 800, bg = "black")
                 self.canv.pack()
@@ -578,7 +588,31 @@ class Homescreen:
             else:
                 self.current_player += 1
             self.gameplay()
+
+            
+    def sfx(self, sound):
+        """Play a sound effect
         
+        :param Homescreen self: Homescreen object stores all the current
+        players, course, hole information 
+        :param string sound: name of sound to play
+        
+        :return: None 
+        """
+        if sound == 'bounce':
+            winsound.PlaySound('sounds/bounce.wav', winsound.SND_ASYNC)
+        elif sound == 'rest':
+            winsound.PlaySound('sounds/rest.wav', winsound.SND_ASYNC)
+        elif sound == 'fail':
+            winsound.PlaySound('sounds/fail.wav', winsound.SND_ASYNC)
+        elif sound == 'laser':
+            winsound.PlaySound('sounds/laser.wav', winsound.SND_ASYNC)
+        elif sound == 'golf':
+            winsound.PlaySound('sounds/golf.wav', winsound.SND_ASYNC)
+        elif sound == 'clap':
+            winsound.PlaySound('sounds/clap.wav', winsound.SND_ASYNC)
+        else:
+            print("Invalid sound name")
 
 root = Tk()
 
