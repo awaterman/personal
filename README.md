@@ -1,2 +1,5 @@
 # personal
-personal code and projects
+Repository for personal code and projects
+
+Current projects:
+Space Golf
